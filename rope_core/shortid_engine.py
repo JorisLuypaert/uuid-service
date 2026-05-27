@@ -1,5 +1,3 @@
- ### rope_core/shortid_engine.py (placeholder, 20 lijnen). Ook hier komt later pas Rope.
-
 import secrets
 import string
 
