@@ -2,7 +2,7 @@
 Dit is je echte microdienst.
 Volledig werkend.
 Volledig veilig.
-Volledig Rope‑proof.###
+Volledig Rope-proof.###
 
 from fastapi import FastAPI
 from pydantic import BaseModel
