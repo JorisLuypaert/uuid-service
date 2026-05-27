@@ -1,5 +1,3 @@
-###rope_core_OTEWEL_uuid_engine.py
-
 import uuid
 
 def rope_uuid_batch(n: int) -> list[str]:
