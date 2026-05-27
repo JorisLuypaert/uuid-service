@@ -7,6 +7,21 @@ app = FastAPI(title="UUID & Short-ID API", version="1.0.0")
 
 
 # -----------------------------
+# Root Endpoint
+# -----------------------------
+
+@app.get("/")
+def root():
+    return {
+        "service": "uuid-service",
+        "status": "ok",
+        "docs": "/docs",
+        "uuid_endpoint": "/v1/uuid",
+        "shortid_endpoint": "/v1/short-id"
+    }
+
+
+# -----------------------------
 # Request Models
 # -----------------------------
 
