@@ -1,9 +1,3 @@
-###main.py (volledige API, 60 lijnen)
-Dit is je echte microdienst.
-Volledig werkend.
-Volledig veilig.
-Volledig Rope-proof.###
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 from rope_core.uuid_engine import rope_uuid_batch
