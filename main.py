@@ -2,8 +2,12 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from rope_core.uuid_engine import rope_uuid_batch
 from rope_core.shortid_engine import rope_shortid_batch
+from datetime import datetime, timezone
+import time
 
-app = FastAPI(title="UUID & Short-ID API", version="1.0.0")
+app = FastAPI(title="UUID & Short-ID API", version="1.1.0")
+
+start_time = time.time()
 
 
 # -----------------------------
@@ -17,7 +21,29 @@ def root():
         "status": "ok",
         "docs": "/docs",
         "uuid_endpoint": "/v1/uuid",
-        "shortid_endpoint": "/v1/short-id"
+        "shortid_endpoint": "/v1/short-id",
+        "health": "/health",
+        "status_endpoint": "/status"
+    }
+
+
+# -----------------------------
+# System Endpoints
+# -----------------------------
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/status")
+def status():
+    uptime_seconds = int(time.time() - start_time)
+    return {
+        "service": "uuid-service",
+        "version": "1.1.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "uptime_seconds": uptime_seconds
     }
 
 
@@ -63,3 +89,5 @@ def generate_short_id(req: ShortIDRequest):
         "length": length,
         "ids": ids
     }
+
+
