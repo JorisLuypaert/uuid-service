@@ -1,11 +1,11 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 from rope_core.uuid_engine import rope_uuid_batch
 from rope_core.shortid_engine import rope_shortid_batch
 from datetime import datetime, timezone
 import time
 
-app = FastAPI(title="UUID & Short-ID API", version="1.1.0")
+app = FastAPI(title="UUID & Short-ID API", version="1.2.0")
 
 start_time = time.time()
 
@@ -41,24 +41,42 @@ def status():
     uptime_seconds = int(time.time() - start_time)
     return {
         "service": "uuid-service",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "uptime_seconds": uptime_seconds
     }
 
 
 # -----------------------------
-# Request Models
+# Request Models (with validation)
 # -----------------------------
 
 class UUIDRequest(BaseModel):
-    count: int = 1
+    count: int = Field(
+        default=1,
+        ge=1,
+        le=10_000,
+        description="Number of UUIDs to generate (1–10,000)"
+    )
 
 
 class ShortIDRequest(BaseModel):
-    count: int = 1
-    length: int = 10
-    alphabet: str | None = None
+    count: int = Field(
+        default=1,
+        ge=1,
+        le=10_000,
+        description="Number of short IDs to generate (1–10,000)"
+    )
+    length: int = Field(
+        default=10,
+        ge=4,
+        le=64,
+        description="Length of each short ID (4–64)"
+    )
+    alphabet: str | None = Field(
+        default=None,
+        description="Optional custom alphabet"
+    )
 
 
 # -----------------------------
@@ -67,8 +85,9 @@ class ShortIDRequest(BaseModel):
 
 @app.post("/v1/uuid")
 def generate_uuid(req: UUIDRequest):
-    count = max(1, min(req.count, 10_000))
-    ids = rope_uuid_batch(count)
+    # Validatie gebeurt nu volledig in Pydantic
+    ids = rope_uuid_batch(req.count)
+
     return {
         "type": "uuid_v4",
         "count": len(ids),
@@ -78,15 +97,13 @@ def generate_uuid(req: UUIDRequest):
 
 @app.post("/v1/short-id")
 def generate_short_id(req: ShortIDRequest):
-    count = max(1, min(req.count, 10_000))
-    length = max(4, min(req.length, 64))
-
-    ids = rope_shortid_batch(count, length, req.alphabet)
+    # Validatie gebeurt nu volledig in Pydantic
+    ids = rope_shortid_batch(req.count, req.length, req.alphabet)
 
     return {
         "type": "short_id",
         "count": len(ids),
-        "length": length,
+        "length": req.length,
         "ids": ids
     }
 
