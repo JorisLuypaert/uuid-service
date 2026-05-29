@@ -1,13 +1,32 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from rope_core.uuid_engine import rope_uuid_batch
 from rope_core.shortid_engine import rope_shortid_batch
 from datetime import datetime, timezone
+import uuid
 import time
 
-app = FastAPI(title="UUID & Short-ID API", version="1.2.0")
+app = FastAPI(title="UUID & Short-ID API", version="1.3.0")
 
 start_time = time.time()
+
+
+# -----------------------------
+# Helper: uniforme API-response
+# -----------------------------
+
+def make_response(data: dict, version: str = "1.3.0"):
+    start = time.time()
+
+    duration_ms = int((time.time() - start) * 1000)
+
+    return {
+        "request_id": str(uuid.uuid4()),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "service_version": version,
+        "duration_ms": duration_ms,
+        "data": data
+    }
 
 
 # -----------------------------
@@ -41,7 +60,7 @@ def status():
     uptime_seconds = int(time.time() - start_time)
     return {
         "service": "uuid-service",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "uptime_seconds": uptime_seconds
     }
@@ -85,26 +104,22 @@ class ShortIDRequest(BaseModel):
 
 @app.post("/v1/uuid")
 def generate_uuid(req: UUIDRequest):
-    # Validatie gebeurt nu volledig in Pydantic
     ids = rope_uuid_batch(req.count)
 
-    return {
+    return make_response({
         "type": "uuid_v4",
         "count": len(ids),
         "ids": ids
-    }
+    })
 
 
 @app.post("/v1/short-id")
 def generate_short_id(req: ShortIDRequest):
-    # Validatie gebeurt nu volledig in Pydantic
     ids = rope_shortid_batch(req.count, req.length, req.alphabet)
 
-    return {
+    return make_response({
         "type": "short_id",
         "count": len(ids),
         "length": req.length,
         "ids": ids
-    }
-
-
+    })
